@@ -62,10 +62,20 @@ spec:
         args: 
         - "-c"
         - >-
+          ## Cluster Nodes know each others login credentials
           mkdir -p /home/postgres
           && cp -f /k8s/secrets/.pgpass /home/postgres
           && chmod 0600 /home/postgres/.pgpass
+          {{- if .Values.ssl.enabled }}
+          ## SSL
+          && sed -i '/^host all all all md5/c\hostssl all all 0.0.0.0/0 md5' /var/lib/postgresql/data/pgdata/pg_hba.conf
+          && mkdir -p /home/postgres/ssl
+          && cp -f /k8s/ssl/* /home/postgres/ssl/
+          && chmod 0600 /home/postgres/ssl/citus.key
+          && chmod 0644 /home/postgres/ssl/citus.crt
+          {{- end }}
           && chown -R postgres:postgres /home/postgres
+          ## Start Citus PostgreSQL
           && docker-entrypoint.sh postgres
         ports:
         - containerPort: {{ .Values.master.port }}
@@ -89,11 +99,22 @@ spec:
           mountPath: /var/lib/postgresql/data
         - name: pgpass
           mountPath: /k8s/secrets
+        {{- if .Values.ssl.enabled }}
+        - name: ssl
+          mountPath: /k8s/ssl
+          readOnly: true
+        {{ end }}
       volumes:
         - name: pgpass
           secret:
             secretName: {{ template "citus-postgresql.fullname" . }}-pgpass
             defaultMode: 0600
+        {{- if .Values.ssl.enabled }}
+        - name: ssl
+          secret:
+            secretName: {{ template "citus-postgresql.fullname" . }}-ssl
+            defaultMode: 256
+        {{ end }}            
   volumeClaimTemplates:
   - metadata:
       name: pgdata

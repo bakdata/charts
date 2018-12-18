@@ -1,0 +1,17 @@
+{{- if .Values.ssl.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "citus-postgresql.fullname" . }}-ssl-settings
+  labels:
+    app: {{ template "citus-postgresql.name" . }}
+    chart: {{ template "citus-postgresql.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  ssl_settings.sql: |+
+    ALTER SYSTEM SET ssl TO 'on';
+    ALTER SYSTEM SET ssl_cert_file TO '/home/postgres/ssl/citus.crt';
+    ALTER SYSTEM SET ssl_key_file TO '/home/postgres/ssl/citus.key';
+    ALTER SYSTEM SET citus.node_conninfo TO 'sslmode=require';
+{{- end }}

@@ -117,6 +117,14 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | `service.annotations` | Annotations for the service. Mostly used by [Ambassador](https://www.getambassador.io/reference/mappings).  | {} |
 
 
+### SSL encryption of TCP/IP connections
+| Parameter | Description | Default |
+| --------- | ----------- | ------- |
+| `ssl.enabled` | Whether or not to JDBC connections to Citus PostgreSQL must be SSL encrypted. | `false` |
+| `ssl.cert` | SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.key` | SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
+
+
 ### Prometheus Exporter Configuration
 
 | Parameter | Description | Default |

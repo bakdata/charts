@@ -38,6 +38,14 @@ service:
   type: ClusterIP
   annotations: {}
 
+
+## SSL encryption of TCP/IP connections
+ssl:
+  enabled: false
+  cert:
+  key:
+
+
 ## Monitoring: Prometheus Exporter Configuration
 ## ref: https://prometheus.io/docs/instrumenting/exporters/
 prometheus:
