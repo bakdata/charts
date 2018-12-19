@@ -62,12 +62,10 @@ spec:
         args: 
         - "-c"
         - >-
-          ## Cluster Nodes know each other's login credentials
           mkdir -p /home/postgres
           && cp -f /k8s/secrets/.pgpass /home/postgres
           && chmod 0600 /home/postgres/.pgpass
           {{- if .Values.ssl.enabled }}
-          ## SSL
           && sed -i '/^host all all all md5/c\hostssl all all 0.0.0.0/0 md5' /var/lib/postgresql/data/pgdata/pg_hba.conf
           && sed -i '/^#ssl = off/c\ssl = on' /var/lib/postgresql/data/pgdata/postgresql.conf
           && sed -i "/^#ssl_cert_file.*/c\ssl_cert_file = '/home/postgres/ssl/citus.crt'" /var/lib/postgresql/data/pgdata/postgresql.conf
@@ -79,7 +77,6 @@ spec:
           && chmod 0644 /home/postgres/ssl/citus.crt
           {{- end }}
           && chown -R postgres:postgres /home/postgres
-          ## Start Citus PostgreSQL
           && docker-entrypoint.sh postgres
         ports:
         - containerPort: {{ .Values.master.port }}
