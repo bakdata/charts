@@ -10,8 +10,8 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   002-configure-ssl.sh: |+
-    \#!/usr/bin/env bash
-    \# make bash behave
+    #!/usr/bin/env bash
+    # make bash behave
     set -euo pipefail
     IFS=$'\n\t'
 
