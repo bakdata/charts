@@ -66,11 +66,7 @@ spec:
           && cp -f /k8s/secrets/.pgpass /home/postgres
           && chmod 0600 /home/postgres/.pgpass
           {{- if .Values.ssl.enabled }}
-          && sed -i '/^host all all all md5/c\hostssl all all 0.0.0.0/0 md5' /var/lib/postgresql/data/pgdata/pg_hba.conf
-          && sed -i '/^#ssl = off/c\ssl = on' /var/lib/postgresql/data/pgdata/postgresql.conf
-          && sed -i "/^#ssl_cert_file.*/c\ssl_cert_file = '/home/postgres/ssl/citus.crt'" /var/lib/postgresql/data/pgdata/postgresql.conf
-          && sed -i "/^#ssl_key_file.*/c\ssl_key_file = '/home/postgres/ssl/citus.key'" /var/lib/postgresql/data/pgdata/postgresql.conf
-          && sed -i "$ a\citus.node_conninfo = 'sslmode=require'" /var/lib/postgresql/data/pgdata/postgresql.conf
+          && cp -f /k8s/ssl-config/002-configure-ssl.sh /docker-entrypoint-initdb.d
           && mkdir -p /home/postgres/ssl
           && cp -f /k8s/ssl/* /home/postgres/ssl/
           && chmod 0600 /home/postgres/ssl/citus.key
@@ -104,6 +100,9 @@ spec:
         - name: ssl
           mountPath: /k8s/ssl
           readOnly: true
+        - name: ssl-config
+          mountPath: /k8s/ssl-config
+          readOnly: true
         {{ end }}
       volumes:
         - name: pgpass
@@ -115,6 +114,9 @@ spec:
           secret:
             secretName: {{ template "citus-postgresql.fullname" . }}-ssl
             defaultMode: 256
+        - name: ssl-config
+          configMap:
+            name: {{ template "citus-postgresql.fullname" . }}-ssl-settings
         {{ end }}            
   volumeClaimTemplates:
   - metadata:
