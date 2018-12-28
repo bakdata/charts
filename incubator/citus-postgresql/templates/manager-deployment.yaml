@@ -1,0 +1,47 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: citus-manager 
+spec:
+  selector:
+    matchLabels:
+      app: citus-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: citus-manager
+    spec:
+      serviceAccountName: pod-listing-sa
+      containers:
+      - name: citus-manager-container
+        image: bakdata/citus-k8s-membership-manager:v0.2
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: citus-config-mount
+          mountPath: /etc/citus-config
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: NAMESPACE
+          value: integration-test
+        - name: SHORT_URL
+          value: "True"
+        - name: WORKER_SERVICE
+          value: {{ template "citus-postgresql.fullname" . }}-worker
+        - name: MASTER_SERVICE 
+          value: {{ template "citus-postgresql.fullname" . }}-master
+        - name: PG_PASSWORD
+          value: "{{ .Values.superuser.password }}"
+        - name: PG_USER
+          value: {{ .Values.superuser.username }}
+        - name: MASTER_PROVISION_FILE
+          value: "/etc/citus-config/master.setup"
+        - name: WORKER_PROVISION_FILE
+          value: "/etc/citus-config/worker.setup"
+      volumes:
+      - name: citus-config-mount
+        configMap:
+          name: setup-config
