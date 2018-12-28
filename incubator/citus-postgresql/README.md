@@ -89,8 +89,8 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
-| `worker.port` | The port on which the Citus worker will be available and serving requests. | `5432` |
 | `worker.replicaCount` | Replica Count of worker pod in statefulset | 2 |
+| `worker.citusType` | Label to detect worker pods | citus-worker |
 | `worker.resources.requests.cpu` | The amount of CPU to request. | 250m |
 | `worker.resources.requests.memory` | The amount of memory to request. | 1Gi |
 | `worker.resources.limit.cpu` | The upper limit CPU usage for a worker. | 1 |
@@ -101,12 +101,31 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
-| `master.port` | The port on which the Citus master will be available and serving requests. | `5432` |
+| `master.citusType` | Label to detect master pods | citus-master |
 | `master.resources.requests.cpu` | The amount of CPU to request. | 500m |
 | `master.resources.requests.memory` | The amount of memory to request. | 1Gi  |
 | `master.resources.limit.cpu` | The upper limit CPU usage for the master. | 4 |
 | `master.resources.limit.memory` | The upper limit memory usage for the master. | 15Gi |
 | `master.pvc.size` | The size of the persistence volume claim. | 10Gi  |
+
+### Manager Deployment Configuration
+
+
+| Parameter | Description | Default |
+| --------- | ----------- | ------- |
+| `manager.image` | Docker Image for citus-k8s-membership-manager | bakdata/citus-k8s-membership-manager |
+| `manager.imageTag` | Docker Image for citus-k8s-membership-manager | v0.3 |
+| `manager.resources` | Pod resource configuration | - |
+| `manager.namespace` | Namespace in which the citus cluster is supposed to be. | default |
+| `manager.shortUrl` | If set {pod\_name}.{service\_name} is used as host pattern instead of {pod\_name}.{service\_name}.{namespace}.svc.cluster.local | True |
+| `manager.minimumWorkers` | Worker threshold until the manager waits with node provisioning | `2` |
+| `manager.serviceAccountName.create` | Create new service account with expected privileges | `true` |
+| `manager.serviceAccountName.name` | Service account allowing the manager to retrieve pod information. | citus-manager-sa |
+| `manager.ssl.mode` | Supports PostgreSQL sslmodes https://www.postgresql.org/docs/current/libpq-ssl.html | prefer |
+| `manager.provision.masterQueries` | Queries used to provision the master nodes.\* | - |
+| `manager.provision.workerQueries` | Queries used to provision the worker nodes.\* | - |
+
+\*Currently, it is only supported to have per line exactly one query. Please reformat all multi-line statements. In addition, the queries need to be separated by a newline in between to ensure skipping of failing queries.
 
 ### Master Service Configuration
 
@@ -140,3 +159,5 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | --------- | ----------- | ------- |
 | `superuser.username` | Username of the superuser. | `"postgres"` |
 | `superuser.password` | Password of the superuser. | `"0987654321"` |
+| `superuser.database` | Database name for PostgreSQL. | `"postgres"` |
+| `superuser.port` | Database port for PostgreSQL. | `5432` |

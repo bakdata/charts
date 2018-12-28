@@ -7,8 +7,8 @@ imagePullPolicy: IfNotPresent
 
 ## Citus Worker
 worker:
-  port: 5432
   replicaCount: 2
+  citusType: "citus-worker"
   resources: {}
   #  limits: 
   #    cpu: 1
@@ -21,7 +21,7 @@ worker:
 
 ## Citus Master
 master:
-  port: 5432
+  citusType: "citus-master"
   resources: {}
   #  limits:
   #    cpu: 4
@@ -39,7 +39,36 @@ service:
   annotations: {}
 
 
+# Citus membership manager
+# manager.ssl.mode supports PostgreSQL sslmodes https://www.postgresql.org/docs/current/libpq-ssl.html
+manager:
+  image: bakdata/citus-k8s-membership-manager
+  imageTag: v0.3
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  namespace: "default"
+  shortUrl: "True"
+  minimumWorkers: "2"
+  serviceAccountName:
+    create: true
+    name: citus-manager-sa
+  ssl:
+    mode: "prefer"
+  provision:
+    masterQueries: |
+      "CREATE FUNCTION one() RETURNS integer AS 'select 1;' LANGUAGE SQL;
+
+      CREATE FUNCTION three() RETURNS integer AS 'select 1;' LANGUAGE SQL;"
+    workerQueries: |
+      "CREATE FUNCTION two() RETURNS integer AS 'select 1;' LANGUAGE SQL;
+
+      CREATE FUNCTION four() RETURNS integer AS 'select 1;' LANGUAGE SQL;"
+
+
 ## SSL encryption of TCP/IP connections
+## add base64 encoded cert+key files
 ssl:
   enabled: false
   cert:
@@ -65,3 +94,5 @@ prometheus:
 superuser:
   password: "0987654321"
   username: "postgres"
+  database: "postgres"
+  port: 5432
