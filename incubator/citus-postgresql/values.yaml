@@ -41,7 +41,16 @@ service:
   annotations: {}
 
 
-## Citus membership manager
+# Citus membership manage
+manager:
+  namespace: "integration-test"
+  shortUrl: "True"
+  minimumWorkers: "2"
+  serviceAccountName: pod-listing-sa
+  provision:
+    mountPath: "/etc/citus-config/"
+    masterFile: "master.setup"
+    workerFile: "worker.setup"
 
 ## SSL encryption of TCP/IP connections
 ssl:

@@ -12,23 +12,23 @@ spec:
       labels:
         app: citus-manager
     spec:
-      serviceAccountName: pod-listing-sa
+      serviceAccountName: {{ .Values.manager.serviceAccountName }}
       containers:
       - name: citus-manager-container
         image: bakdata/citus-k8s-membership-manager:v0.2
         imagePullPolicy: Always
         volumeMounts:
         - name: citus-config-mount
-          mountPath: /etc/citus-config
+          mountPath: {{ .Values.manager.provision.mountPath }}
         resources:
           requests:
             cpu: 100m
             memory: 100Mi
         env:
         - name: NAMESPACE
-          value: integration-test
+          value: {{ .Values.manager.namespace }}
         - name: SHORT_URL
-          value: "True"
+          value: "{{ .Values.manager.shortUrl }}"
         - name: WORKER_SERVICE
           value: {{ template "citus-postgresql.fullname" . }}-worker
         - name: MASTER_SERVICE 
@@ -38,9 +38,12 @@ spec:
         - name: PG_USER
           value: {{ .Values.superuser.username }}
         - name: MASTER_PROVISION_FILE
-          value: "/etc/citus-config/master.setup"
+          value: {{ .Values.manager.provision.mountPath }}{{ .Values.manager.provision.masterFile }}
         - name: WORKER_PROVISION_FILE
-          value: "/etc/citus-config/worker.setup"
+          value: {{ .Values.manager.provision.mountPath }}{{ .Values.manager.provision.workerFile }}
+
+        - name: MINIMUM_WORKERS
+          value: "{{ .Values.manager.minimumWorkers }}"
       volumes:
       - name: citus-config-mount
         configMap:
