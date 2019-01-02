@@ -43,6 +43,10 @@ service:
 
 # Citus membership manage
 manager:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
   namespace: "integration-test"
   shortUrl: "True"
   minimumWorkers: "2"

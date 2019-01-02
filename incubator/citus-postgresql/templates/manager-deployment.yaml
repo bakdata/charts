@@ -21,9 +21,7 @@ spec:
         - name: citus-config-mount
           mountPath: {{ .Values.manager.provision.mountPath }}
         resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
+ {{ toYaml .Values.manager.resources | indent 12 }}
         env:
         - name: NAMESPACE
           value: {{ .Values.manager.namespace }}
