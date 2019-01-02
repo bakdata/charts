@@ -54,7 +54,12 @@ manager:
   provision:
     mountPath: "/etc/citus-config/"
     masterFile: "master.setup"
+    masterQueries: |
+      CREATE FUNCTION one() RETURNS integer AS 'select 1;' LANGUAGE SQL;
     workerFile: "worker.setup"
+    workerQueries: |
+      CREATE FUNCTION two() RETURNS integer AS 'select 2;' LANGUAGE SQL;
+
 
 ## SSL encryption of TCP/IP connections
 ssl:

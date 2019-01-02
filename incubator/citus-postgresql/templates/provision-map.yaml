@@ -3,9 +3,5 @@ kind: ConfigMap
 metadata:
   name: setup-config
 data:
-  master.setup: |
-    CREATE ERROR; |
-    CREATE FUNCTION one() RETURNS integer AS 'select 1;' LANGUAGE SQL;
-  worker.setup: |
-    CREATE ERROR; |
-    CREATE FUNCTION two() RETURNS integer AS 'select 2;' LANGUAGE SQL;
+  master.setup: {{ .Values.manager.provision.masterQueries }}
+  worker.setup: {{ .Values.manager.provision.workerQueries }}
