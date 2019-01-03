@@ -41,20 +41,6 @@ spec:
         env:
         - name: DATA_SOURCE_NAME
           value: postgresql://postgres@127.0.0.1:{{ .Values.master.port }}?sslmode=disable
-        livenessProbe:
-          httpGet:
-            path: /metrics
-            port: {{ .Values.prometheus.port }}
-          initialDelaySeconds: 60
-          periodSeconds: 120
-          timeoutSeconds: 15
-        readinessProbe:
-          httpGet:
-            path: /metrics
-            port: {{ .Values.prometheus.port }}
-          initialDelaySeconds: 60
-          periodSeconds: 120
-          timeoutSeconds: 15        
       {{- end }}
       - name: citus
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
