@@ -15,7 +15,7 @@ spec:
       serviceAccountName: {{ .Values.manager.serviceAccountName }}
       containers:
       - name: citus-manager-container
-        image: bakdata/citus-k8s-membership-manager:v0.2
+        image: bakdata/citus-k8s-membership-manager:latest
         imagePullPolicy: Always
         volumeMounts:
         - name: citus-config-mount
@@ -42,6 +42,8 @@ spec:
 
         - name: MINIMUM_WORKERS
           value: "{{ .Values.manager.minimumWorkers }}"
+        - name: SSL_MODE
+          value: "{{ .Values.manager.ssl.mode }}"
       volumes:
       - name: citus-config-mount
         configMap:

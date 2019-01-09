@@ -23,7 +23,7 @@ worker:
 ## Citus Master
 master:
   port: 5432
-  citusTyp: "citus-master"
+  citusType: "citus-master"
   resources: {}
   #  limits:
   #    cpu: 4
@@ -41,7 +41,8 @@ service:
   annotations: {}
 
 
-# Citus membership manage
+# Citus membership manager
+# manager.ssl.mode supports PostgreSQL sslmodes https://www.postgresql.org/docs/current/libpq-ssl.html
 manager:
   resources:
     requests:
@@ -50,7 +51,9 @@ manager:
   namespace: "integration-test"
   shortUrl: "True"
   minimumWorkers: "2"
-  serviceAccountName: pod-listing-sa
+  serviceAccountName: citus-manager-sa
+  ssl:
+    mode: "prefer"
   provision:
     mountPath: "/etc/citus-config/"
     masterFile: "master.setup"
@@ -62,6 +65,7 @@ manager:
 
 
 ## SSL encryption of TCP/IP connections
+## add base64 encoded cert+key files
 ssl:
   enabled: false
   cert:
