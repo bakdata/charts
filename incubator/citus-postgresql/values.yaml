@@ -44,6 +44,8 @@ service:
 # Citus membership manager
 # manager.ssl.mode supports PostgreSQL sslmodes https://www.postgresql.org/docs/current/libpq-ssl.html
 manager:
+  image: bakdata/citus-k8s-membership-manager
+  imageTag: latest
   resources:
     requests:
       cpu: 100m
@@ -55,11 +57,8 @@ manager:
   ssl:
     mode: "prefer"
   provision:
-    mountPath: "/etc/citus-config/"
-    masterFile: "master.setup"
     masterQueries: |
       CREATE FUNCTION one() RETURNS integer AS 'select 1;' LANGUAGE SQL;
-    workerFile: "worker.setup"
     workerQueries: |
       CREATE FUNCTION two() RETURNS integer AS 'select 2;' LANGUAGE SQL;
 
@@ -91,3 +90,5 @@ prometheus:
 superuser:
   password: "0987654321"
   username: "postgres"
+  database: "postgres"
+  port: "5432"
