@@ -92,6 +92,15 @@ spec:
             secretKeyRef:
               name: {{ template "citus-postgresql.fullname" . }}-secret
               key: superuser-password
+        {{- if .Values.readiness.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            - /pg_healthcheck
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        {{- end }}
         volumeMounts:
         - name: pgdata
           mountPath: /var/lib/postgresql/data

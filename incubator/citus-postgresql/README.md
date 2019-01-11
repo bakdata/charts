@@ -82,31 +82,33 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | `fullNameOverride` | Override default Citus name | - |
 | `imagePullSecrets` | Secrets to be used for private registries. | - |
 | `image` | Docker Image of Citus. | citusdata/citus |
-| `imageTag` | Docker Image Tag of Citus. | 7.5.1 |
+| `imageTag` | Docker Image Tag of Citus. | `7.5.1` |
 | `imagePullPolicy` | [Image pull policy](https://kubernetes.io/docs/concepts/configuration/overview/#container-images) | `IfNotPresent` |
+| `readiness.enabled` | Enabled by default. Only disable if port other than 5432 as [Citus healthcheck](https://github.com/citusdata/docker/blob/master/pg_healthcheck) has got static port. | `true` |
 
 ### Worker StatefulSet Configuration
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `worker.port` | The port on which the Citus worker will be available and serving requests. | `5432` |
-| `worker.replicaCount` | Replica Count of worker pod in statefulset | 2 |
-| `worker.resources.requests.cpu` | The amount of CPU to request. | 250m |
-| `worker.resources.requests.memory` | The amount of memory to request. | 1Gi |
-| `worker.resources.limit.cpu` | The upper limit CPU usage for a worker. | 1 |
-| `worker.resources.limit.memory` | The upper limit memory usage for a worker. | 15Gi |
-| `worker.pvc.size` | The size of the persistence volume claim. | 50Gi |
+| `worker.replicaCount` | Replica Count of worker pod in statefulset | `2` |
+| `worker.updateStrategy` | [StatefulSet Update Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies)  | `type: RollingUpdate` |
+| `worker.resources.requests.cpu` | The amount of CPU to request. | - |
+| `worker.resources.requests.memory` | The amount of memory to request. | - |
+| `worker.resources.limit.cpu` | The upper limit CPU usage for a worker. | - |
+| `worker.resources.limit.memory` | The upper limit memory usage for a worker. | - |
+| `worker.pvc.size` | The size of the persistence volume claim. Uses default storage class | `50Gi` |
 
 ### Master Deployment Configuration
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `master.port` | The port on which the Citus master will be available and serving requests. | `5432` |
-| `master.resources.requests.cpu` | The amount of CPU to request. | 500m |
-| `master.resources.requests.memory` | The amount of memory to request. | 1Gi  |
-| `master.resources.limit.cpu` | The upper limit CPU usage for the master. | 4 |
-| `master.resources.limit.memory` | The upper limit memory usage for the master. | 15Gi |
-| `master.pvc.size` | The size of the persistence volume claim. | 10Gi  |
+| `master.resources.requests.cpu` | The amount of CPU to request. | - |
+| `master.resources.requests.memory` | The amount of memory to request. | -  |
+| `master.resources.limit.cpu` | The upper limit CPU usage for the master. | - |
+| `master.resources.limit.memory` | The upper limit memory usage for the master. | - |
+| `master.pvc.size` | The size of the persistence volume claim. | `10Gi`  |
 
 ### Master Service Configuration
 
@@ -121,8 +123,8 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `ssl.enabled` | Whether or not to JDBC connections to Citus PostgreSQL must be SSL encrypted. | `false` |
-| `ssl.cert` | SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
-| `ssl.key` | SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.cert` | Content of SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.key` | Content of SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
 
 
 ### Prometheus Exporter Configuration
