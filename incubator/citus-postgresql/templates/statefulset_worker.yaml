@@ -69,6 +69,8 @@ spec:
         env:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
+        - name: PGPASSFILE
+          value: /home/postgres/.pgpass
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:

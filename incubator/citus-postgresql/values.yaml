@@ -2,7 +2,7 @@
 fullnameOverride: ""
 imagePullSecrets: "" # Provide the name of secret for accessing private docker registry
 image: citusdata/citus
-imageTag: 7.5.1
+imageTag: 8.1.1
 imagePullPolicy: IfNotPresent
 
 ## Citus Worker
@@ -80,7 +80,7 @@ ssl:
 prometheus:
   enabled: true
   image: wrouesnel/postgres_exporter
-  imageTag: v0.4.6
+  imageTag: v0.4.7
   port: 9187
   resources:
     limits:
