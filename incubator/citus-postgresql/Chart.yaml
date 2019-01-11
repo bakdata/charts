@@ -8,4 +8,6 @@ sources:
 maintainers:
   - name: Jochen Huelss
     email: jochen.huelss@alvary.io
+  - name: bakdata GmbH
+    email: info@bakdata.com
 icon: https://raw.githubusercontent.com/citusdata/citus/master/github-banner.png
