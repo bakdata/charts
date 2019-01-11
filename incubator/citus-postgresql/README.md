@@ -82,7 +82,7 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | `fullNameOverride` | Override default Citus name | - |
 | `imagePullSecrets` | Secrets to be used for private registries. | - |
 | `image` | Docker Image of Citus. | citusdata/citus |
-| `imageTag` | Docker Image Tag of Citus. | 7.5.1 |
+| `imageTag` | Docker Image Tag of Citus. | 8.1.1 |
 | `imagePullPolicy` | [Image pull policy](https://kubernetes.io/docs/concepts/configuration/overview/#container-images) | `IfNotPresent` |
 
 ### Worker StatefulSet Configuration
@@ -140,8 +140,8 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `ssl.enabled` | Whether or not to JDBC connections to Citus PostgreSQL must be SSL encrypted. | `false` |
-| `ssl.cert` | SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
-| `ssl.key` | SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.cert` | SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/11/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.key` | SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/11/ssl-tcp.html). Must be base64 encoded. | - |
 
 
 ### Prometheus Exporter Configuration
@@ -150,7 +150,7 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | --------- | ----------- | ------- |
 | `prometheus.enabled` | Whether or not to install Prometheus Exporter as a sidecar container and expose metrics to Prometheus. | `true` |
 | `prometheus.image` | Docker Image for Prometheus Exporter container. | `wrouesnel/postgres_exporter` |
-| `prometheus.imageTag` | Docker Image Tag for Prometheus Exporter container. | `v0.4.6` |
+| `prometheus.imageTag` | Docker Image Tag for Prometheus Exporter container. | `v0.4.7` |
 | `prometheus.port` | Exporter Port which exposes metrics in Prometheus format for scraping. | `9187` |
 
 ### Secret Configuration
