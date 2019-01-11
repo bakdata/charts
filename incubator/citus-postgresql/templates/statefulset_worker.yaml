@@ -40,7 +40,7 @@ spec:
 {{ toYaml .Values.prometheus.resources | indent 12 }}
         env:
         - name: DATA_SOURCE_NAME
-          value: postgresql://postgres@127.0.0.1:{{ .Values.worker.port }}?sslmode=disable
+          value: postgresql://postgres@127.0.0.1:{{ .Values.superuser.port }}?sslmode=disable
       {{- end }}
       - name: citus
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
@@ -63,7 +63,7 @@ spec:
           && chown -R postgres:postgres /home/postgres
           && docker-entrypoint.sh postgres
         ports:
-        - containerPort: {{ .Values.worker.port }}
+        - containerPort: {{ .Values.superuser.port }}
         resources:
 {{ toYaml .Values.worker.resources | indent 12 }}
         env:
@@ -79,6 +79,11 @@ spec:
             secretKeyRef:
               name: {{ template "citus-postgresql.fullname" . }}-secret
               key: superuser-password
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "citus-postgresql.fullname" . }}-secret
+              key: superuser-database
         volumeMounts:
         - name: pgdata
           mountPath: /var/lib/postgresql/data

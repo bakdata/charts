@@ -7,7 +7,6 @@ imagePullPolicy: IfNotPresent
 
 ## Citus Worker
 worker:
-  port: 5432
   replicaCount: 2
   citusType: "citus-worker"
   resources: {}
@@ -22,7 +21,6 @@ worker:
 
 ## Citus Master
 master:
-  port: 5432
   citusType: "citus-master"
   resources: {}
   #  limits:
@@ -50,10 +48,12 @@ manager:
     requests:
       cpu: 100m
       memory: 100Mi
-  namespace: "integration-test"
+  namespace: "default"
   shortUrl: "True"
   minimumWorkers: "2"
-  serviceAccountName: citus-manager-sa
+  serviceAccountName:
+    create: true
+    name: citus-manager-sa
   ssl:
     mode: "prefer"
   provision:
@@ -95,4 +95,4 @@ superuser:
   password: "0987654321"
   username: "postgres"
   database: "postgres"
-  port: "5432"
+  port: 5432

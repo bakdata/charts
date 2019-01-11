@@ -12,7 +12,7 @@ spec:
       labels:
         app: citus-manager
     spec:
-      serviceAccountName: {{ .Values.manager.serviceAccountName }}
+      serviceAccountName: {{ .Values.manager.serviceAccountName.name }}
       containers:
       - name: citus-manager-container
         image: "{{ .Values.manager.image }}:{{ .Values.manager.imageTag }}"
