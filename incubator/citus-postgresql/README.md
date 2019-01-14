@@ -10,6 +10,7 @@ This chart bootstraps a deployment of a Citus Postgresql Cluster. The current sc
 ## Docker Image Source
 
 * [Citus](https://github.com/citusdata/docker)
+* [Citus Membership Mamanger](https://github.com/bakdata/citus-k8s-membership-manager)
 * [Prometheus sidecar](https://github.com/wrouesnel/postgres_exporter)
 
 ## Installed Components
@@ -25,6 +26,27 @@ NAMESPACE: development
 STATUS: DEPLOYED
 
 RESOURCES:
+==> v1/ServiceAccount
+NAME                   AGE
+citus-manager-sa         2m
+
+==> v1/ClusterRole
+NAME                   AGE
+pods-list                2m
+
+==> v1/ClusterRoleBinding
+NAME                   AGE
+pods-list                2m
+
+
+==> v1/ServiceAccount
+NAME                   AGE
+citus-manager-sa         2m
+
+==> v1/ConfigMap
+NAME                   AGE
+setup-config             2m
+
 ==> v1/Secret
 NAME                   AGE
 citus-postgresql-secret  2m
@@ -35,17 +57,19 @@ citus-postgresql-master  2m
 citus-postgresql-worker  2m
 citus-postgresql         2m
 
+==> v1/Deployment
+citus-manager
+
 ==> v1/StatefulSet
 citus-postgresql-master  2m
 citus-postgresql-worker  2m
 
 ==> v1/Pod(related)
-
 NAME                     READY  STATUS   RESTARTS  AGE
 citus-postgresql-master-0  2/2    Running  0         2m
 citus-postgresql-worker-0  2/2    Running  1         2m
 citus-postgresql-worker-1  1/2    Running  1         23s
-
+citus-manager-container    1/1    Running  0         2m
 
 NOTES:
 [...]
@@ -53,15 +77,19 @@ NOTES:
 
 
 There are
-1. A [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) `citus-postgresql-worker` which contains n Citus Postgresql Worker [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/)s: `citus-postgresql-worker-n`. 
-After the first worker pod has been started, Kubernetes waits until all containers in this pod become "ready" before launching further pods. The readiness probe of the prometheus sidecar takes approx. two minutes.
-1. A [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) `citus-postgresql` which contains a Citus Postgresql Master [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/): `citus-postgresql-master`. 
-   1. Future idea: add a container similar [citus-membership-manager](https://github.com/citusdata/membership-manager) or [atomicdb's docker container](https://github.com/jberkus/atomicdb/blob/master/citus_petset/citus-docker/scripts/entrypoint.py) to the pod to auto-integrate new worker nodes to better facilitate scaling.
+1. A [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) `citus-postgresql-worker` which contains n (determined by replication factor) [Pods](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) with a Citus Postgresql Worke and a Prometheus sidecar container each.
+After the first worker pod has been started, Kubernetes waits until all containers in this pod become "ready" before launching further pods.
+1. A [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) `citus-postgresql-master` which contains a [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) with a Citus Postgresql Master and a Prometheus sidecar container. 
+1. A [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) `citus-manager` which contains a [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) with the Citus Membership Manager container.
 1. A [Service](https://kubernetes.io/docs/concepts/services-networking/service) `citus-postgresql` which serves as Cluster internal endpoint to reach the Citus master.
 1. A headless [Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services) `citus-postgresql-worker` which serves as cluster internal endpoint to a specific Citus worker node.
 1. A headless [Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services) `citus-postgresql-master` which serves as cluster internal endpoint to the Citus master node.
+1. A [ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/) `setup-config` which contains SQL scripts for provisioning master and worker nodes.
 1. A [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) that holds credentials for the superuser.
 1. A [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) that deploys credentials for all nodes in the cluster as a [.pgpass](https://www.postgresql.org/docs/11/libpq-pgpass.html) file.
+1. A [ServiceAccount](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/) `citus-manager-sa` for the Citus Membership Manager deployment.
+1. A [ClusterRole](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) `pods-list` to query Kubernetes API for pod details and status.
+1. A [ClusterRoleBinding](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) `pods-list` to map the ClusterRole to the ServiceAccount.
 
 ## Configuration
 
@@ -83,19 +111,24 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | `imagePullSecrets` | Secrets to be used for private registries. | - |
 | `image` | Docker Image of Citus. | citusdata/citus |
 | `imageTag` | Docker Image Tag of Citus. | 8.1.1 |
+| `imageTag` | Docker Image Tag of Citus. | `7.5.1` |
 | `imagePullPolicy` | [Image pull policy](https://kubernetes.io/docs/concepts/configuration/overview/#container-images) | `IfNotPresent` |
+| `readiness.enabled` | Enabled by default. Only disable if port other than 5432 as [Citus healthcheck](https://github.com/citusdata/docker/blob/master/pg_healthcheck) has got static port. | `true` |
+
 
 ### Worker StatefulSet Configuration
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `worker.replicaCount` | Replica Count of worker pod in statefulset | 2 |
+| `worker.updateStrategy` | [StatefulSet Update Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies)  | `type: RollingUpdate` |
 | `worker.citusType` | Label to detect worker pods | citus-worker |
 | `worker.resources.requests.cpu` | The amount of CPU to request. | 250m |
 | `worker.resources.requests.memory` | The amount of memory to request. | 1Gi |
 | `worker.resources.limit.cpu` | The upper limit CPU usage for a worker. | 1 |
 | `worker.resources.limit.memory` | The upper limit memory usage for a worker. | 15Gi |
 | `worker.pvc.size` | The size of the persistence volume claim. | 50Gi |
+
 
 ### Master Deployment Configuration
 
@@ -108,8 +141,10 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | `master.resources.limit.memory` | The upper limit memory usage for the master. | 15Gi |
 | `master.pvc.size` | The size of the persistence volume claim. | 10Gi  |
 
+
 ### Manager Deployment Configuration
 
+The [Citus Membership Mamanger](https://github.com/bakdata/citus-k8s-membership-manager) aims to provide a service which helps running PostgreSQL with the Citus extension on kubernetes. It manages the membership of Citus worker nodes and provisions SQL scripts on pod startup.
 
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
@@ -127,6 +162,7 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 
 \*Currently, it is only supported to have per line exactly one query. Please reformat all multi-line statements. In addition, the queries need to be separated by a newline in between to ensure skipping of failing queries.
 
+
 ### Master Service Configuration
 
 | Parameter | Description | Default |
@@ -140,8 +176,8 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `ssl.enabled` | Whether or not to JDBC connections to Citus PostgreSQL must be SSL encrypted. | `false` |
-| `ssl.cert` | SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/11/ssl-tcp.html). Must be base64 encoded. | - |
-| `ssl.key` | SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/11/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.cert` | Content of SSL Certificate file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
+| `ssl.key` | Content of SSL Key file. For details, see [PostgreSQL documentation](https://www.postgresql.org/docs/10/ssl-tcp.html). Must be base64 encoded. | - |
 
 
 ### Prometheus Exporter Configuration
@@ -152,6 +188,7 @@ helm install incubator/citus-postgresql --name citus-postgresql -f <cluster-name
 | `prometheus.image` | Docker Image for Prometheus Exporter container. | `wrouesnel/postgres_exporter` |
 | `prometheus.imageTag` | Docker Image Tag for Prometheus Exporter container. | `v0.4.7` |
 | `prometheus.port` | Exporter Port which exposes metrics in Prometheus format for scraping. | `9187` |
+
 
 ### Secret Configuration
 

@@ -13,6 +13,10 @@ spec:
   selector:
     matchLabels:
       app: {{ template "citus-postgresql.name" . }}-worker
+  {{- if .Values.worker.updateStrategy }}
+  updateStrategy:
+{{ toYaml .Values.worker.updateStrategy | indent 4 }}
+  {{- end }}      
   template:
     metadata:
       labels:
@@ -86,6 +90,15 @@ spec:
             secretKeyRef:
               name: {{ template "citus-postgresql.fullname" . }}-secret
               key: superuser-database
+        {{- if .Values.readiness.enabled }}              
+        readinessProbe:
+          exec:
+            command:
+            - /pg_healthcheck
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        {{- end }}          
         volumeMounts:
         - name: pgdata
           mountPath: /var/lib/postgresql/data

@@ -4,11 +4,15 @@ imagePullSecrets: "" # Provide the name of secret for accessing private docker r
 image: citusdata/citus
 imageTag: 8.1.1
 imagePullPolicy: IfNotPresent
+readiness:
+  enabled: true
 
 ## Citus Worker
 worker:
   replicaCount: 2
   citusType: "citus-worker"
+  updateStrategy:
+    type: RollingUpdate
   resources: {}
   #  limits: 
   #    cpu: 1
